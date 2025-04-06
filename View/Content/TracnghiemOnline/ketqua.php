@@ -4,7 +4,7 @@
       <!-- Card Chính -->
       <div class="card shadow-lg border-0 rounded-3 mb-4">
         <!-- Header với gradient -->
-        <div class="card-header text-white py-3" style="background: linear-gradient(135deg, #0d6efd, #0a58ca);">
+        <div class="card-header text-white py-3" style="background-color: rgb(45, 178, 198); color: white;">
           <div class="d-flex align-items-center">
             <div class="bg-white rounded-circle p-2 me-3">
               <i class="bi bi-file-earmark-check text-primary" style="font-size: 1.5rem;"></i>
@@ -28,6 +28,21 @@
                   <p class="mb-0">
                     <i class="bi bi-calendar-check me-2"></i>
                     <strong>Ngày thi:</strong> <?= date('d/m/Y') ?>
+                  </p>
+                  <p class="mb-0">
+                    <i class="bi bi-clock me-2"></i>
+                    <strong>Thời gian làm bài:</strong> 
+                    <?php
+                      
+                      // Lấy số giây và định dạng
+                      $seconds = $ketqua->thoigianlambai; // Lấy số giây từ kết quả
+                      $formattedTime = sprintf("%02d:%02d:%02d", 
+                          floor($seconds / 3600), 
+                          floor(($seconds % 3600) / 60), 
+                          $seconds % 60
+                      );
+                      echo htmlspecialchars($formattedTime);
+                    ?>
                   </p>
                 </div>
                 <div class="col-md-6 text-md-end mt-3 mt-md-0">
@@ -88,60 +103,14 @@
               </tbody>
             </table>
           </div>
+
+          <!-- Các phần khác như thống kê và nhận xét... -->
           
-          <!-- Thống kê -->
-          <div class="row mt-4">
-            <div class="col-md-6">
-              <div class="card border-primary mb-3">
-                <div class="card-header bg-primary text-white">
-                  <h5 class="m-0"><i class="bi bi-graph-up me-2"></i>Thống kê</h5>
-                </div>
-                <div class="card-body">
-                  <?php
-                    $total = count($ketqua->chitiet);
-                    $correct = array_reduce($ketqua->chitiet, function($carry, $item) {
-                      return $carry + ($item->dung_sai ? 1 : 0);
-                    }, 0);
-                    $percentCorrect = $total > 0 ? round(($correct / $total) * 100) : 0;
-                  ?>
-                  <div class="mb-3">
-                    <p class="mb-1"><strong>Tổng số câu hỏi:</strong> <?= $total ?></p>
-                    <p class="mb-1"><strong>Số câu trả lời đúng:</strong> <?= $correct ?></p>
-                    <p class="mb-0"><strong>Số câu trả lời sai:</strong> <?= $total - $correct ?></p>
-                  </div>
-                  <div class="progress" style="height: 25px;">
-                    <div class="progress-bar bg-success" role="progressbar" style="width: <?= $percentCorrect ?>%">
-                      <?= $percentCorrect ?>% Đúng
-                    </div>
-                    <div class="progress-bar bg-danger" role="progressbar" style="width: <?= 100 - $percentCorrect ?>%">
-                      <?= 100 - $percentCorrect ?>% Sai
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="card border-info mb-3">
-                <div class="card-header bg-info text-white">
-                  <h5 class="m-0"><i class="bi bi-lightbulb me-2"></i>Nhận xét</h5>
-                </div>
-                <div class="card-body">
-                  <?php if (($ketqua->diem ?? 0) >= 8): ?>
-                    <p class="mb-0">Xuất sắc! Bạn đã nắm vững kiến thức của bài thi này.</p>
-                  <?php elseif (($ketqua->diem ?? 0) >= 5): ?>
-                    <p class="mb-0">Tốt! Bạn đã đạt yêu cầu của bài thi, nhưng vẫn có thể cải thiện thêm.</p>
-                  <?php else: ?>
-                    <p class="mb-0">Bạn cần ôn tập lại kiến thức. Đừng nản lòng, hãy thử lại!</p>
-                  <?php endif; ?>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
-        
+
         <!-- Footer -->
         <div class="card-footer py-3 d-flex justify-content-between align-items-center bg-light">
-          <a href="index.php" class="btn btn-primary">
+        <a href="http://localhost/PHP_BaoCao/index.php?controller=user&action=homeuser" class="btn btn-primary">
             <i class="bi bi-house-door me-1"></i> Trang chủ
           </a>
           <a href="index.php?controller=TracnghiemOnline&action=lambai&id=<?= htmlspecialchars($ketqua->id_baithi ?? '') ?>" class="btn btn-outline-primary">

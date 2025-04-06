@@ -1,5 +1,5 @@
 
-<h1 class="text-center text-gradient mt-4 fw-bold">✏️ Create Role</h1>
+<h1 class="text-center text-gradient mt-4 fw-bold">✏️ Create Môn Học</h1>
 
 <div class="container mt-4">
     <div class="card shadow-lg p-4 rounded-4">

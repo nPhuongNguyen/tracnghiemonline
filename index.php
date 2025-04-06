@@ -1,7 +1,8 @@
 <?php
+
 // Lấy tham số từ URL
 $controller = isset($_GET['controller']) ? $_GET['controller'] : 'user';
-$action = isset($_GET['action']) ? $_GET['action'] : 'index';
+$action = isset($_GET['action']) ? $_GET['action'] : 'home';
 $id_lambai = $_GET['id_lambai'] ?? null;
 // Gọi file controller
 $controllerFile = 'controller/' . ucfirst($controller) . 'Controller.php';
