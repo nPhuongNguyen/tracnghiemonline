@@ -2,6 +2,7 @@
     require_once $_SERVER['DOCUMENT_ROOT'] . '/PHP_BaoCao/Connect/Connect.php';
     require_once('./Model/UserModel.php');
     require_once('./Model/RoleModel.php');
+    require_once('./Model/TracnghiemOnlineModel.php');
 
     class UserController{
         private $userModel;
@@ -12,7 +13,22 @@
             $this->userModel = new UserModel($this->db);
             $this->roleModel = new RoleModel($this->db);
         }
+        public function home() {
+            $total_users = $this->userModel->getTotalUsers();
+            $total_exams = $this->userModel->getTotalExams();
+            $total_questions = $this->userModel->getTotalQuestions();
+            $total_completed_exams = $this->userModel->getTotalCompletedExams();
+
+            include './View/User/home.php';
+        }
+        public function homeuser() {
+            // Không cần kiểm tra cookie ở đây
+            $userName = isset($_COOKIE['userName']) ? $_COOKIE['userName'] : 'Khách'; // Nếu không có cookie, đặt là 'Khách'
+            
+            $unattemptedExams = $this->userModel->getUnattemptedExams($userName); // Lấy danh sách bài thi chưa làm
         
+            include './View/User/homeuser.php'; // Load view
+        }
         public function index(){
             $users = $this->userModel->getAllUsers();
             include './View/User/list.php';
@@ -84,58 +100,72 @@
                     $taikhoan = $_POST['taikhoan'];
                     $matkhau = $_POST['matkhau'];
                     $remember = isset($_POST['remember']);
-                    // Lấy thông tin tài khoản từ model
+        
+                    // Lấy thông tin user từ model
                     $user = $this->userModel->getUserByUserName($taikhoan);
-    
+        
                     if ($user && password_verify($matkhau, $user->passWord)) {
-                        // Ghi nhớ đăng nhập nếu được chọn
+                        // Bắt đầu session và lưu thông tin user
+                        if (session_status() === PHP_SESSION_NONE) {
+                            session_start();
+                            
+                        }
+                        
+                        $_SESSION["userName"] = $user->userName;
+                        $_SESSION["role"] = $user->roleName;
+        
+                        // Ghi nhớ đăng nhập nếu được chọn (lưu vào cookie)
                         if ($remember) {
                             setcookie("userName", $user->userName, time() + (86400 * 30), "/");
                             setcookie("role", $user->roleName, time() + (86400 * 30), "/");
                         }
-
+        
                         if ($user->roleName == 'Admin') {
-                            header("Location: index.php?controller=TracnghiemOnline&action=Home");
+                            header("Location: index.php?controller=user&action=home");
                         } else {
-                            header("Location: index.php?controller=user&action=customer");
+                            header("Location: index.php?controller=user&action=homeuser");
                         }
                         exit();
                     } else {
                         header("Location: index.php?controller=user&action=login&error=1");
                         exit();
                     }
-                } 
-                else {
+                } else {
                     header("Location: index.php?controller=user&action=login&error=2");
                     exit();
                 }
             }
         }
+        
 
         public function registercheck() {
             if ($_SERVER["REQUEST_METHOD"] == "POST") {
-                if (!empty($_POST['taikhoan']) && !empty($_POST['matkhau']) && !empty($_POST['roleId'])) {
+                if (!empty($_POST['taikhoan']) && !empty($_POST['matkhau'])) {
                     $taikhoan = trim($_POST['taikhoan']);
                     $matkhau = $_POST['matkhau'];
-                    $roleId = intval($_POST['roleId']); // Đảm bảo roleId là số nguyên
+                    $roleId = 2; // Giả sử 2 là roleId cho customer
                     
                     // Mã hóa mật khẩu
                     $matkhau_ma_hoa = password_hash($matkhau, PASSWORD_DEFAULT);
         
                     if ($this->userModel->checkUserExists($taikhoan)) {
+                        $_SESSION["error"] = "Tài khoản đã tồn tại!";
                         header("Location: index.php?controller=user&action=register");
                         exit();
                     }
         
                     // Tiến hành đăng ký
                     if ($this->userModel->registerUser($taikhoan, $matkhau_ma_hoa, $roleId)) {
+                        $_SESSION["success"] = "Đăng ký thành công!";
                         header("Location: index.php?controller=user&action=login");
                         exit();
                     } else {
+                        $_SESSION["error"] = "Có lỗi xảy ra trong quá trình đăng ký!";
                         header("Location: index.php?controller=user&action=register");
                         exit();
                     }
                 } else {
+                    $_SESSION["error"] = "Vui lòng điền đầy đủ thông tin!";
                     header("Location: index.php?controller=user&action=register");
                     exit();
                 }
@@ -145,6 +175,7 @@
         
 
         public function login() {
+            
             include "./View/User/login.php";
         }
 
@@ -154,7 +185,6 @@
         }
 
         public function logout() {
-            // Kiểm tra nếu session chưa bắt đầu thì mới start
             if (session_status() === PHP_SESSION_NONE) {
                 session_start();
             }
@@ -164,17 +194,37 @@
             session_unset();
             session_destroy(); 
         
-            // Xóa cookie nếu có
-            if (isset($_COOKIE["role"])) {
-                setcookie("role", "", time() - 3600, "/");
-            }
-            if (isset($_COOKIE["userName"])) {
-                setcookie("userName", "", time() - 3600, "/");
+            // Kiểm tra session đã xóa chưa
+            if (empty($_SESSION)) {
+                echo "Đã đăng xuất thành công!";
             }
         
+            // Xóa cookie nếu có
+            setcookie("role", "", time() - 3600, "/");
+            setcookie("userName", "", time() - 3600, "/");
+        
             // Chuyển hướng về trang home
-            header("Location: index.php?controller=TracnghiemOnline&action=Home");
+            header("location: index.php?controller=user&action=Homeuser"); 
             exit(); 
+        }
+        
+        public function profile() {
+            if (!isset($_COOKIE['userName'])) {
+                header("Location: index.php?controller=user&action=login");
+                exit();
+            }
+        
+            $userName = $_COOKIE['userName'];
+            $user = $this->userModel->getUserbyuserName($userName);
+            $averageScore = $this->userModel->getUserAverageScore($userName); // Lấy điểm trung bình tổng
+            $subjectScores = $this->userModel->getUserScoresBySubject($userName); // Lấy điểm trung bình theo môn
+        
+            if (!$user) {
+                echo "Người dùng không tồn tại!";
+                return;
+            }
+        
+            include "./View/User/profile.php"; // Layout chung
         }
         
         

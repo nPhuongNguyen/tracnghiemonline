@@ -1,17 +1,16 @@
 <?php
-if (session_status() == PHP_SESSION_NONE) {
-    session_start();
-}
-
+$thoiGianThi = 45; // Mặc định 30 phút
 // Nếu chưa có thời gian bắt đầu thì lưu vào session
 if (!isset($_SESSION['thoigian_batdau'])) {
     $_SESSION['thoigian_batdau'] = time();
 }
 ?>
-
 <div class="container py-5">
   <h2 class="text-center mb-4">Bài Thi Trắc Nghiệm</h2>
-  
+    <!-- Đồng hồ đếm ngược -->
+    <div id="timer" class="alert alert-danger text-center fw-bold">
+        Thời gian còn lại: <span id="countdown"><?= $thoiGianThi * 60 ?></span>
+    </div>
   <form action="index.php?controller=TracnghiemOnline&action=nopbai" method="post">
     <input type="hidden" name="id_baithi" value="<?= htmlspecialchars($id_baithi); ?>">
     
@@ -50,7 +49,8 @@ if (!isset($_SESSION['thoigian_batdau'])) {
     ?>
     
     <div class="d-grid gap-2 mt-4">
-      <button type="submit" class="btn btn-primary btn-lg">Nộp bài</button>
+        <button type="submit" id="submit" class="btn btn-primary btn-lg">Nộp bài</button>
+
     </div>
     
     <?php } else { ?>
@@ -60,3 +60,37 @@ if (!isset($_SESSION['thoigian_batdau'])) {
     <?php } ?>
   </form>
 </div>
+<script>
+    let timeLeft = <?= $thoiGianThi * 60 ?>;
+    let timerDisplay = document.getElementById("countdown");
+    let submitButton = document.getElementById("submit");
+
+    function updateTimer() {
+        let minutes = Math.floor(timeLeft / 60);
+        let seconds = timeLeft % 60;
+        timerDisplay.textContent = minutes + " phút " + (seconds < 10 ? "0" : "") + seconds + " giây";
+
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            if (submitButton) {
+                submitButton.disabled = false; // Đảm bảo nút không bị vô hiệu hóa
+                submitButton.click(); // Tự động click
+                Swal.fire({
+                title: "Nộp bài thành công!",
+                text: "Bài thi của bạn đã được gửi.",
+                icon: "success",
+                confirmButtonText: "OK"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                  window.location.href = "index.php?controller=TracnghiemOnline&action=ketqua&id_lambai=<?= $id_baithi ?>  ";                }
+            });
+
+            } else {
+                console.error("Không tìm thấy nút #submit!");
+            }
+        } else {
+            timeLeft--;
+        }
+    }
+    let timer = setInterval(updateTimer, 1000);
+</script>
