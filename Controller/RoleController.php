@@ -30,8 +30,6 @@
             }
         }
 
-        
-    
         public function create() {
             if ($_SERVER["REQUEST_METHOD"] == "POST" && !empty($_POST["roleName"])) {
                 $roleName = trim($_POST["roleName"]);
