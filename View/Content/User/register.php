@@ -26,16 +26,7 @@
         </div>
         
 
-        <div class="mb-3">
-            <label for="roleId" class="form-label">Quyền:</label>
-                <select name="roleId" class="form-control mb-3">
-                    <?php foreach ($roles as $role): ?>
-                        <option value="<?php echo $role->roleId; ?>">
-                            <?php echo htmlspecialchars($role->roleName); ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-        </div>
+        
 
 
         <button type="submit" class="btn btn-primary w-100">Đăng ký</button>
