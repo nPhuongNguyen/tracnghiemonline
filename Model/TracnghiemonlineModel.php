@@ -52,15 +52,17 @@ Class TracnghiemOnlineModel{
         }
     }
     
-    public function saveBaiLam($id_nguoidung, $id_baithi, $answers,$thoigian_batdau) {
+    public function saveBaiLam($id_nguoidung, $id_baithi, $answers, $thoigian_batdau) {
         try {
             $this->conn->beginTransaction();
-            $thoigian_ketthuc = time();
-            $thoigian_lambai = $thoigian_ketthuc - $thoigian_batdau;
-            $thoigian_lambai_format = sprintf("%02d:%02d:%02d", floor($thoigian_lambai / 3600), floor(($thoigian_lambai % 3600) / 60), $thoigian_lambai % 60);
-            // Lưu thông tin bài thi của người dùng
+            $thoigian_batdau = time(); // Lưu thời gian bắt đầu
+            // ... mã xử lý bài thi ...
+            $thoigian_ketthuc = time(); // Lưu thời gian kết thúc
+
+            $thoigian_lambai = $thoigian_ketthuc - $thoigian_batdau; // Tính số giây
+            // Lưu vào cơ sở dữ liệu
             $stmt = $this->conn->prepare("INSERT INTO baithi_user (userName, id_baithi, thoigianlambai) VALUES (?, ?, ?)");
-            $stmt->execute([$id_nguoidung, $id_baithi, $thoigian_lambai_format]);
+            $stmt->execute([$id_nguoidung, $id_baithi, $thoigian_lambai]);
             $id_lambai = $this->conn->lastInsertId();
             
             $so_cau_dung = 0;
@@ -140,8 +142,14 @@ Class TracnghiemOnlineModel{
     }
     
     
+    public function kiemTraDaLamBai($id_nguoidung, $id_baithi) {
+        $query = "SELECT COUNT(*) FROM baithi_user WHERE userName = ? AND id_baithi = ? ";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([$id_nguoidung, $id_baithi]);
+        return $stmt->fetchColumn() > 0; // Trả về `true` nếu đã làm bài, `false` nếu chưa
+    }
     
-    
+
     
 }
 ?>
