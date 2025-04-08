@@ -46,19 +46,15 @@
     </h1>
 
     <div class="card border-0 shadow rounded-3 overflow-hidden">
-        <div class="card-header border-0 py-3 bg-primary text-white">
-            <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded shadow-sm">
-                <h5 class="mb-0 fw-bold text-primary">
-                    <i class="bi bi-people-fill me-2"></i>Quản lý Role
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold text-white">
+                    <i class="bi bi-people-fill me-2"></i> Quản lý Role
                 </h5>
                 
-                <a href="?controller=Role&action=createForm" class="btn btn-success d-flex align-items-center">
+            <a href="?controller=Role&action=createForm" class="btn btn-success d-flex align-items-center">
                     <i class="bi bi-plus-circle me-2"></i> Thêm Role Mới
                 </a>
-            </div>
-
         </div>
-        
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
